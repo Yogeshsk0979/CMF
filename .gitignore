@@ -3,9 +3,9 @@ node_modules/
 backend/node_modules/
 frontend/node_modules/
 
-# Production build output
-dist/
-frontend/dist/
+# Production build output (committed for low-memory EC2)
+# dist/
+# frontend/dist/
 
 # System / OS files / Keys
 *.log
