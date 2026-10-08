@@ -1,88 +1,52 @@
-"use client"
-
 import * as React from "react"
-import { cva } from "class-variance-authority";
-import { cn } from "cn"
-import { Tabs as TabsPrimitive } from "radix-ui"
+import { cn } from "@/lib/utils"
 
-function Tabs({
-  className,
-  orientation = "horizontal",
-  ...props
-}) {
-  return (
-    <TabsPrimitive.Root
-      data-slot="tabs"
-      data-orientation={orientation}
-      className={cn(
-        "group/tabs flex gap-2 data-horizontal:flex-col",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+const TabsContext = React.createContext(null)
 
-const tabsListVariants = cva(
-  "group/tabs-list inline-flex w-fit items-center justify-center rounded-lg p-[3px] text-muted-foreground group-data-horizontal/tabs:h-8 group-data-vertical/tabs:h-fit group-data-vertical/tabs:flex-col data-[variant=line]:rounded-none",
-  {
-    variants: {
-      variant: {
-        default: "bg-muted",
-        line: "gap-1 bg-transparent",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
+function Tabs({ children, defaultValue, value, onValueChange, ...props }) {
+  const [internal, setInternal] = React.useState(defaultValue || '')
+  const current = value !== undefined ? value : internal
+  const setValue = (v) => {
+    if (value === undefined) setInternal(v)
+    onValueChange?.(v)
   }
-)
-
-function TabsList({
-  className,
-  variant = "default",
-  ...props
-}) {
   return (
-    <TabsPrimitive.List
-      data-slot="tabs-list"
-      data-variant={variant}
-      className={cn(tabsListVariants({ variant }), className)}
-      {...props}
-    />
+    <TabsContext.Provider value={{ value: current, setValue }}>
+      <div {...props}>{children}</div>
+    </TabsContext.Provider>
   )
 }
 
-function TabsTrigger({
-  className,
-  ...props
-}) {
+function TabsList({ children, className }) {
   return (
-    <TabsPrimitive.Trigger
-      data-slot="tabs-trigger"
+    <div className={cn("inline-flex h-10 items-center justify-start rounded-md bg-gray-100 p-1 text-gray-500", className)}>
+      {children}
+    </div>
+  )
+}
+
+function TabsTrigger({ children, value, className }) {
+  const ctx = React.useContext(TabsContext)
+  const active = ctx.value === value
+  return (
+    <button
+      type="button"
+      onClick={() => ctx.setValue(value)}
       className={cn(
-        "relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-1.5 py-0.5 text-sm font-medium whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 dark:text-muted-foreground dark:hover:text-foreground group-data-[variant=default]/tabs-list:data-active:shadow-sm group-data-[variant=line]/tabs-list:data-active:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-active:bg-transparent dark:group-data-[variant=line]/tabs-list:data-active:border-transparent dark:group-data-[variant=line]/tabs-list:data-active:bg-transparent",
-        "data-active:bg-background data-active:text-foreground dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground",
-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-active:after:opacity-100",
+        "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        active ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900",
         className
       )}
-      {...props}
-    />
+    >
+      {children}
+    </button>
   )
 }
 
-function TabsContent({
-  className,
-  ...props
-}) {
-  return (
-    <TabsPrimitive.Content
-      data-slot="tabs-content"
-      className={cn("flex-1 text-sm outline-none", className)}
-      {...props}
-    />
-  )
+function TabsContent({ children, value, className }) {
+  const ctx = React.useContext(TabsContext)
+  if (ctx.value !== value) return null
+  return <div className={cn("mt-4 ring-offset-background", className)}>{children}</div>
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }
+export { Tabs, TabsList, TabsTrigger, TabsContent }
