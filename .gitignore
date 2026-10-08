@@ -7,7 +7,9 @@ frontend/node_modules/
 dist/
 frontend/dist/
 
-# Logs & temp
+# System / OS files / Keys
 *.log
 .DS_Store
 .claude/
+*.pem
+
